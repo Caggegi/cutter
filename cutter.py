@@ -1,103 +1,77 @@
-from inputs import get_gamepad
-import math
-import threading
+import controller as C
+import platform
 
-class XboxController(object):
-    MAX_TRIG_VAL = math.pow(2, 8)
-    MAX_JOY_VAL = math.pow(2, 15)
+cutter = False
+if "raspbian" in platform.platform():
+    cutter = True
 
-    def __init__(self):
+toggle = False
 
-        self.LeftJoystickY = 0
-        self.LeftJoystickX = 0
-        self.RightJoystickY = 0
-        self.RightJoystickX = 0
-        self.LeftTrigger = 0
-        self.RightTrigger = 0
-        self.LeftBumper = 0
-        self.RightBumper = 0
-        self.A = 0
-        self.X = 0
-        self.Y = 0
-        self.B = 0
-        self.LeftThumb = 0
-        self.RightThumb = 0
-        self.Back = 0
-        self.Start = 0
-        self.LeftDPad = 0
-        self.RightDPad = 0
-        self.UpDPad = 0
-        self.DownDPad = 0
+def trigger(button, value):
+    return
 
-        self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
-        self._monitor_thread.daemon = True
-        self._monitor_thread.start()
+def trigger2(button, value):
+    return
 
+def run(direction):
+    if not cutter: return
+    import RPi.GPIO as gpio
+    gpio.setmode(gpio.BOARD)
+    _left_ahead  = gpio.setup(31,gpio.OUT)  #6
+    _right_ahead = gpio.setup(35,gpio.OUT)  #19
+    _left_back   = gpio.setup(32,gpio.OUT)  #12
+    _right_back  = gpio.setup(36,gpio.OUT)  #16
+    if mv[0] < -0.5 and mv[1] < 0.1: #front
+        gpio.output(_left_ahead,  gpio.HIGH)
+        gpio.output(_right_ahead, gpio.HIGH)
+        gpio.output(_left_back,    gpio.LOW)
+        gpio.output(_right_back,   gpio.LOW)
+    elif mv[0] > 0.5 and mv[1] < 0.1: #back
+        gpio.output(_left_ahead,   gpio.LOW)
+        gpio.output(_right_ahead,  gpio.LOW)
+        gpio.output(_left_back,   gpio.HIGH)
+        gpio.output(_right_back,  gpio.HIGH)
+    elif mv[0] < 0.1 and mv[1] > 0.5: #right
+        gpio.output(_left_ahead,   gpio.LOW)
+        gpio.output(_right_ahead, gpio.HIGH)
+        gpio.output(_left_back,   gpio.HIGH)
+        gpio.output(_right_back,   gpio.LOW)
+    elif mv[0] < 0.1 and mv[1] < -0.5: #left
+        gpio.output(_left_ahead,  gpio.HIGH)
+        gpio.output(_right_ahead,  gpio.LOW)
+        gpio.output(_left_back,    gpio.LOW)
+        gpio.output(_right_back,  gpio.HIGH)
 
-    def read(self): # return the buttons/triggers that you care about in this methode
-        commands = {}
-        commands['LeftJoystickX'] = self.LeftJoystickX
-        commands['LeftJoystickY'] = self.LeftJoystickY
-        commands['a'] = self.A
-        commands['b'] = self.B
-        commands['y'] = self.X
-        commands['x'] = self.Y
-        commands['rb'] = self.RightBumper
-        commands['rt'] = self.RightTrigger
-        return commands
-
-
-    def _monitor_controller(self):
-        while True:
-            events = get_gamepad()
-            for event in events:
-                if event.code == 'ABS_Y':
-                    self.LeftJoystickY = event.state / XboxController.MAX_JOY_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_X':
-                    self.LeftJoystickX = event.state / XboxController.MAX_JOY_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_RY':
-                    self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_RX':
-                    self.RightJoystickX = event.state / XboxController.MAX_JOY_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_Z':
-                    self.LeftTrigger = event.state / XboxController.MAX_TRIG_VAL # normalize between 0 and 1
-                elif event.code == 'ABS_RZ':
-                    self.RightTrigger = event.state / XboxController.MAX_TRIG_VAL # normalize between 0 and 1
-                elif event.code == 'BTN_TL':
-                    self.LeftBumper = event.state
-                elif event.code == 'BTN_TR':
-                    self.RightBumper = event.state
-                elif event.code == 'BTN_SOUTH':
-                    self.A = event.state
-                elif event.code == 'BTN_NORTH':
-                    self.Y = event.state #previously switched with X
-                elif event.code == 'BTN_WEST':
-                    self.X = event.state #previously switched with Y
-                elif event.code == 'BTN_EAST':
-                    self.B = event.state
-                elif event.code == 'BTN_THUMBL':
-                    self.LeftThumb = event.state
-                elif event.code == 'BTN_THUMBR':
-                    self.RightThumb = event.state
-                elif event.code == 'BTN_SELECT':
-                    self.Back = event.state
-                elif event.code == 'BTN_START':
-                    self.Start = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY1':
-                    self.LeftDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY2':
-                    self.RightDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY3':
-                    self.UpDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY4':
-                    self.DownDPad = event.state
-
-
+def run2(direction):
+    if cutter: return
+    if mv[0] < -0.5 and mv[1] < 0.1: #front
+        print("front")
+    elif mv[0] > 0.5 and mv[1] < 0.1: #back
+        print("back")
+    elif mv[0] < 0.1 and mv[1] > 0.5: #right
+        print("right")
+    elif mv[0] < 0.1 and mv[1] < -0.5: #left
+        print("left")
 
 
 if __name__ == '__main__':
     import time
-    joy = XboxController()
+    joy = C.XboxController()
     while True:
-        time.sleep(1)
-        print(joy.read())
+        time.sleep(0.1)
+        pushed = joy.read()
+        for key in pushed:
+            if type(pushed[key]) is not list and abs(pushed[key]) > 0.5:
+                print(f"pushed {key}: {pushed[key]}")
+                if cutter:
+                    trigger(key, pushed[key])
+                else:
+                    trigger2(key, pushed[key])
+            if type(pushed[key]) is list and (abs(pushed[key][0]) > 0.1 or abs(pushed[key][1]) > 0.1):
+                mv = pushed[key]
+                if abs(mv[0])<0.1: mv[0]=0
+                if abs(mv[1])<0.1: mv[1]=0
+                if cutter:
+                    run(mv)
+                else:
+                    run2(mv)
