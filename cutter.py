@@ -2,7 +2,7 @@ import controller as C
 import platform
 
 cutter = False
-if "raspbian" in platform.platform():
+if "armv6l" in platform.platform():
     cutter = True
 
 toggle = False
