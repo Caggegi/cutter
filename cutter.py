@@ -7,11 +7,22 @@ if "raspbian" in platform.platform():
 
 toggle = False
 
-def trigger(button, value):
-    return
+def trigger(button):
+    if not cutter: return
+    import RPi.GPIO as gpio
+    gpio.setmode(gpio.BOARD)
+    blade  = gpio.setup(16,gpio.OUT)
+    if button == 'A' or button == 'R2':
+        gpio.output(blade,  gpio.HIGH)
+    else:
+        gpio.output(blade,  gpio.LOW)
 
-def trigger2(button, value):
-    return
+def trigger2(button):
+    if cutter: return
+    if button == 'A' or button == 'R2':
+        print("cutting")
+    else:
+        print("stop")
 
 def run(direction):
     if not cutter: return
@@ -64,9 +75,9 @@ if __name__ == '__main__':
             if type(pushed[key]) is not list and abs(pushed[key]) > 0.5:
                 print(f"pushed {key}: {pushed[key]}")
                 if cutter:
-                    trigger(key, pushed[key])
+                    trigger(key)
                 else:
-                    trigger2(key, pushed[key])
+                    trigger2(key)
             if type(pushed[key]) is list and (abs(pushed[key][0]) > 0.1 or abs(pushed[key][1]) > 0.1):
                 mv = pushed[key]
                 if abs(mv[0])<0.1: mv[0]=0
