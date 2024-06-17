@@ -12,8 +12,17 @@ def trigger(button):
     import RPi.GPIO as gpio
     gpio.setmode(gpio.BOARD)
     blade  = gpio.setup(16,gpio.OUT)
+    _left_ahead  = gpio.setup(31,gpio.OUT)  #6
+    _right_ahead = gpio.setup(35,gpio.OUT)  #19
+    _left_back   = gpio.setup(32,gpio.OUT)  #12
+    _right_back  = gpio.setup(36,gpio.OUT)  #16
     if button == 'A' or button == 'R2':
         gpio.output(blade,  gpio.HIGH)
+    elif button == 'L3' or button == 'R3':
+        gpio.output(_left_ahead, gpio.LOW)
+        gpio.output(_right_ahead, gpio.LOW)
+        gpio.output(_left_back, gpio.LOW)
+        gpio.output(_right_back, gpio.LOW)
     else:
         gpio.output(blade,  gpio.LOW)
 
@@ -67,6 +76,7 @@ def run2(direction):
 
 if __name__ == '__main__':
     import time
+    print("starting....")
     joy = C.XboxController()
     while True:
         time.sleep(0.1)
